@@ -2,4 +2,7 @@
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.jetbrains.kotlin.android) apply false
+    alias(libs.plugins.jetbrains.kotlin.serialization) apply false
+    alias(libs.plugins.compose.gradle.plugin) apply false
+    alias(libs.plugins.parcelize.gradle.plugin) apply false
 }

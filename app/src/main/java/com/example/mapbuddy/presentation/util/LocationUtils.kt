@@ -1,4 +1,4 @@
-package com.example.mapbuddy.util
+package com.example.mapbuddy.presentation.util
 
 import android.Manifest
 import android.content.Context
@@ -8,55 +8,51 @@ import android.location.LocationManager
 import android.os.Build
 import android.os.CancellationSignal
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import java.util.concurrent.Executors
-import java.util.function.Consumer
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 @RequiresApi(Build.VERSION_CODES.R)
 suspend fun Context.getLocation(): Location {
     return suspendCancellableCoroutine { continuation ->
         val locationManager = getSystemService<LocationManager>()!!
+        val cancellationSignal = CancellationSignal()
 
-        val hasFineLocationPermission = ActivityCompat.checkSelfPermission(
+        val hasFineLocationPermission = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        val hasCoarseLocationPermission = ActivityCompat.checkSelfPermission(
+        val hasCoarseLocationPermission = ContextCompat.checkSelfPermission(
             this,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        val cancelSignal = CancellationSignal()
-
         if (hasFineLocationPermission && hasCoarseLocationPermission) {
             locationManager.getCurrentLocation(
                 LocationManager.NETWORK_PROVIDER,
-                cancelSignal,
-                Executors.newSingleThreadExecutor()
+                cancellationSignal,
+                mainExecutor
             ) { location ->
                 continuation.resume(location)
             }
         } else {
-            continuation.resumeWithException(RuntimeException("No location permissions found!"))
+            continuation.resumeWithException(RuntimeException("User has not granted location permissions"))
         }
 
         continuation.invokeOnCancellation {
-            cancelSignal.cancel()
+            cancellationSignal.cancel()
         }
     }
 }
-
-/**
- * launch {
- * some code being executed
- *      getLocation()
- *  some code that is supposed to be executed
- * }
- */

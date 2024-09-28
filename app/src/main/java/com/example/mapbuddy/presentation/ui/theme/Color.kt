@@ -1,4 +1,4 @@
-package com.example.mapbuddy.ui.theme
+package com.example.mapbuddy.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

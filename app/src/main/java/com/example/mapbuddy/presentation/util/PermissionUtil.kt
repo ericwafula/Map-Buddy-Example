@@ -1,4 +1,4 @@
-package com.example.mapbuddy.util
+package com.example.mapbuddy.presentation.util
 
 import android.Manifest
 import android.content.Context
